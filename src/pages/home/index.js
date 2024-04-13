@@ -58,7 +58,7 @@ const Home = () => {
   ];
   return (
     <PrivateLayout>
-      <div className="flex justify-between gap-x-10 my-10 ">
+      <div className="flex justify-between gap-x-10 my-10 relative">
         <div className="w-1/3 flex flex-col items-center gap-y-3">
           <UserProfile className="w-64 h-64 rounded-full" />
           <hr className="w-full h-1"></hr>
@@ -86,7 +86,7 @@ const Home = () => {
               address={allEvent.address}
             />
           ))}
-          <div className="flex  justify-end">
+          <div className=" bottom-5 right-5 fixed">
             <button className="border border-gray-200 shadow p-2 rounded-md ">
               Etkinlik oluştur
             </button>

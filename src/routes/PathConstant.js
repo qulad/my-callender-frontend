@@ -8,6 +8,9 @@ const PathConstants = {
   BACKEND: {
     LOGIN: "http://localhost:5000/auth/login",
     REGISTER: "http://localhost:5000/auth/register",
+    EVENT: "http://localhost:5000/event",
+    ME: "http://localhost:5000/user/me",
+    USER: "http://localhost:5000/user/"
   }
 };
 

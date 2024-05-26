@@ -2,7 +2,7 @@ import { AddUser } from "components/Icons/AddUser";
 import { Dots } from "components/Icons/Dots";
 import { Verify } from "components/Icons/Verify";
 import PrivateLayout from "layouts/PrivateLayout";
-import EventCardLarge from "pages/home/components/EventCardLarge";
+import FriendCard from "pages/home/components/FriendCard";
 import React from "react";
 
 const User = () => {
@@ -64,7 +64,7 @@ const User = () => {
         <h1 className="text-gray-500 text-xl my-4">Etkinlikler</h1>
         <div className="w-[800px] shadow p-4 rounded-md">
           {mainEventList.map((allEvent) => (
-            <EventCardLarge
+            <FriendCard
               eventName={allEvent.eventName}
               location={allEvent.location}
               desc={allEvent.desc}

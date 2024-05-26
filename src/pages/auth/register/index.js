@@ -11,7 +11,7 @@ const Register = () => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
-    const response = await fetch('http://localhost:5000/auth/register', {
+    const response = await fetch(PathConstants.REGISTER, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

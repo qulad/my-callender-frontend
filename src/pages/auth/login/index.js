@@ -11,7 +11,7 @@ const Login = () => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
-    const response = await fetch('http://localhost:5000/auth/login', {
+    const response = await fetch(PathConstants.BACKEND.LOGIN, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

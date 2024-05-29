@@ -4,7 +4,7 @@ const PathConstants = {
   LOGOUT: "/logout",
   REGISTER: "/register",
   ABOUT: "/about",
-  USER: "/user/:id",
+  USER: "/user/",
   BACKEND: {
     LOGIN: "http://localhost:5000/auth/login",
     REGISTER: "http://localhost:5000/auth/register",

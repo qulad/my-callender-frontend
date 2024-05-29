@@ -55,6 +55,7 @@ const Home = () => {
       .then((data) => {
         const parsedData = JSON.parse(data);
         const currentUser = {
+          id: parsedData.id,
           fullName: parsedData.full_name,
           userName: parsedData.user_name,
           email: parsedData.email,
@@ -93,11 +94,14 @@ const Home = () => {
       });
   }, [access_token, navigate]);
 
+  console.log(me);
+
   return (
     <PrivateLayout>
       <div className="flex justify-between gap-x-10 my-10 relative">
         <div className="w-1/3 flex flex-col items-center gap-y-3">
           <UserProfile
+            onClickMethod={() => navigate(PathConstants.USER + me.id)}
             className="w-64 h-64 rounded-full"
             img={me.img}
             userName={me.userName}

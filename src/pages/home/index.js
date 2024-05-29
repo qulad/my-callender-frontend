@@ -30,6 +30,16 @@ const Home = () => {
           'Authorization': `Bearer ${access_token}`
         }
       });
+      
+      if (response.status === 401) {
+        navigate(PathConstants.LOGIN);
+        throw new Error('Unauthorized');
+      }
+  
+      if (!response.ok) {
+        throw new Error(`HTTP status ${response.status}`);
+      }
+
       const data = await response.text();
       const parsedData = JSON.parse(data);
       const event = {

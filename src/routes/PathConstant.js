@@ -6,6 +6,7 @@ const PathConstants = {
   ABOUT: "/about",
   USER: "/user/",
   BACKEND: {
+    BASE: "http://localhost:5000",
     LOGIN: "http://localhost:5000/auth/login",
     REGISTER: "http://localhost:5000/auth/register",
     EVENT: "http://localhost:5000/event",

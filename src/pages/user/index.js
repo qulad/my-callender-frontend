@@ -1,5 +1,8 @@
 import { AddUser } from "components/Icons/AddUser";
+import { BlockUser } from "components/Icons/BlockUser";
 import { Dots } from "components/Icons/Dots";
+import { RejectUser } from "components/Icons/RejectUser";
+import { AcceptUser } from "components/Icons/AcceptUser";
 import { Verify } from "components/Icons/Verify";
 import PrivateLayout from "layouts/PrivateLayout";
 import FriendCard from "pages/home/components/FriendCard";
@@ -19,9 +22,8 @@ const User = () => {
       navigate(PathConstants.LOGIN);
     }
   });
-  
+
   const location = useLocation();
-  console.log(location.pathname);
 
   useEffect(() => {
     fetch(PathConstants.BACKEND.ME, {
@@ -31,10 +33,23 @@ const User = () => {
         'Authorization': `Bearer ${access_token}`
       }
     })
-      .then(response => response.text())
+      .then((response) => {
+        if (response.status === 401) {
+          navigate(PathConstants.LOGIN);
+          throw new Error('Unauthorized');
+        }
+        if (!response.ok) {
+          throw new Error(`HTTP status ${response.status}`);
+        }
+        return response.text();
+      })
       .then((data) => {
         const parsedData = JSON.parse(data);
         const currentUser = {
+          friends: parsedData.friends,
+          sentFriendRequests: parsedData.sent_friend_requests,
+          receivedFriendRequest: parsedData.received_friend_requests,
+          blocked: parsedData.blocked,
           id: parsedData.id,
           fullName: parsedData.full_name,
           userName: parsedData.user_name,
@@ -49,21 +64,35 @@ const User = () => {
   }, [access_token, navigate]);
 
   useEffect(() => {
-    fetch(location.pathname, {
+    fetch(PathConstants.BACKEND.BASE + location.pathname, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${access_token}`
       }
     })
-      .then(response => response.text())
+      .then((response) => {
+        if (response.status === 401) {
+          navigate(PathConstants.LOGIN);
+          throw new Error('Unauthorized');
+        }
+        if (!response.ok) {
+          throw new Error(`HTTP status ${response.status}`);
+        }
+        return response.text();
+      })
       .then((data) => {
         const parsedData = JSON.parse(data);
         const currentUser = {
+          friends: parsedData.friends,
+          sentFriendRequests: parsedData.sent_friend_requests,
+          receivedFriendRequest: parsedData.received_friend_requests,
+          blocked: parsedData.blocked,
           id: parsedData.id,
           fullName: parsedData.full_name,
           userName: parsedData.user_name,
           email: parsedData.email,
+          biography: parsedData.biography,
           img: parsedData.profile_photo
         }
         setUser(currentUser);
@@ -72,6 +101,46 @@ const User = () => {
         console.error('Error fetching friends list:', error);
       });
   }, [access_token, navigate]);
+
+  console.log(me);
+  console.log(user);
+
+  const canSeeFriendRequest = () => {
+    return (me.id != user.id &&
+      me.sentFriendRequests.includes(user.userName) &&
+      me.receivedFriendRequest.includes(user.userName));
+  }
+
+  const canSeeAddFriend = () => {
+    return (me.id != user.id &&
+      !me.friends.includes(user.userName) &&
+      !me.blocked.includes(user.userName) &&
+      !me.sentFriendRequests.includes(user.userName) &&
+      !me.receivedFriendRequest.includes(user.userName));
+  };
+
+  const canSeeBlockFriend = () => {
+    return (me.id != user.id &&
+      !me.blocked.includes(user.userName) &&
+      !me.sentFriendRequests.includes(user.userName) &&
+      !me.receivedFriendRequest.includes(user.userName));
+  }
+
+  const acceptFriendRequest = () => {
+    console.log("e");
+  };
+
+  const rejectFriendRequest = () => {
+    console.log("r");
+  };
+
+  const sendFriendRequest = () => {
+    console.log("q");
+  };
+
+  const blockUserRequest = () => {
+    console.log("w")
+  };
 
   let profileAddress =
     "https://t3.ftcdn.net/jpg/02/43/12/34/360_F_243123463_zTooub557xEWABDLk0jJklDyLSGl2jrr.jpg";
@@ -99,31 +168,30 @@ const User = () => {
         <div className="flex flex-col">
           <div className="flex gap-x-5 items-center">
             <div className="flex gap-x-2 items-center">
-              ertuğrulAhmet <Verify />
+              {user.userName} <Verify />
             </div>
             <button className="p-1 rounded-md text-sm bg-gray-200 text-black">
-              Arkadaş Ekle
+              {user.fullName}
             </button>
             <button className="p-1 rounded-md text-sm bg-gray-200 text-black">
-              Mesaj gönder
+              {user.email}
             </button>
             <div className="flex justify-center items-center bg-gray-200 p-1 rounded-md">
-              <AddUser />
+              <AddUser
+                visible={canSeeAddFriend()}
+                onClickMethod={canSeeAddFriend() ? sendFriendRequest : null} />
+              <AcceptUser
+                visible={canSeeFriendRequest()}
+                onClickMethod={canSeeFriendRequest() ? acceptFriendRequest : null} />
+              <RejectUser
+                visible={canSeeFriendRequest()}
+                onClickMethod={canSeeFriendRequest() ? rejectFriendRequest : null} />
+              <BlockUser
+                visible={canSeeBlockFriend()}
+                onClickMethod={canSeeBlockFriend() ? blockUserRequest : null} />
             </div>
-            <Dots />
           </div>
-          <div className="flex gap-x-10 font-semibold text-sm mt-5">
-            <p>
-              1.156 <span className="font-normal">gönderi</span>
-            </p>
-            <p>
-              7.6 M <span className="font-normal">takipçi</span>
-            </p>
-            <p>
-              362 <span className="font-normal">takip</span>
-            </p>
-          </div>
-          <p className="font-semibold mt-5">Ahmet Ertuğrul</p>
+          <p className="font-semibold mt-5">{user.biography}</p>
         </div>
       </div>
       <hr className="w-full h-1"></hr>

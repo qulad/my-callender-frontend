@@ -3,9 +3,76 @@ import { Dots } from "components/Icons/Dots";
 import { Verify } from "components/Icons/Verify";
 import PrivateLayout from "layouts/PrivateLayout";
 import FriendCard from "pages/home/components/FriendCard";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from 'react-router-dom';
+import PathConstants from "routes/PathConstant";
 
 const User = () => {
+  const navigate = useNavigate();
+
+  const [me, setMe] = useState({});
+  const [user, setUser] = useState({});
+
+  const access_token = localStorage.getItem("access_token");
+  useEffect(() => {
+    if (!access_token) {
+      navigate(PathConstants.LOGIN);
+    }
+  });
+  
+  const location = useLocation();
+  console.log(location.pathname);
+
+  useEffect(() => {
+    fetch(PathConstants.BACKEND.ME, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${access_token}`
+      }
+    })
+      .then(response => response.text())
+      .then((data) => {
+        const parsedData = JSON.parse(data);
+        const currentUser = {
+          id: parsedData.id,
+          fullName: parsedData.full_name,
+          userName: parsedData.user_name,
+          email: parsedData.email,
+          img: parsedData.profile_photo
+        }
+        setMe(currentUser);
+      })
+      .catch(error => {
+        console.error('Error fetching friends list:', error);
+      });
+  }, [access_token, navigate]);
+
+  useEffect(() => {
+    fetch(location.pathname, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${access_token}`
+      }
+    })
+      .then(response => response.text())
+      .then((data) => {
+        const parsedData = JSON.parse(data);
+        const currentUser = {
+          id: parsedData.id,
+          fullName: parsedData.full_name,
+          userName: parsedData.user_name,
+          email: parsedData.email,
+          img: parsedData.profile_photo
+        }
+        setUser(currentUser);
+      })
+      .catch(error => {
+        console.error('Error fetching friends list:', error);
+      });
+  }, [access_token, navigate]);
+
   let profileAddress =
     "https://t3.ftcdn.net/jpg/02/43/12/34/360_F_243123463_zTooub557xEWABDLk0jJklDyLSGl2jrr.jpg";
   const mainEventList = [

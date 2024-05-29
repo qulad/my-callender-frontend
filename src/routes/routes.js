@@ -11,7 +11,7 @@ const User = lazy(() => import("pages/user"));
 const RouteGuard = ({ children }) => {
   const { id } = useParams();
 
-  if (isNaN(id)) {
+  if (!isNaN(id)) {
     return <Navigate to={PathConstants.HOME} />;
   }
 

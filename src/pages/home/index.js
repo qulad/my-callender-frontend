@@ -15,93 +15,101 @@ const Home = () => {
     if (!access_token) {
       navigate(PathConstants.LOGIN);
     }
-  })
+  });
 
   const [eventList, setEventList] = useState([]);
   const [friendList, setFriendList] = useState([]);
   const [me, setMe] = useState({});
 
   useEffect(() => {
-    fetch(PathConstants.BACKEND.EVENT, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${access_token}`
-      }
-    })
-      .then(response => response.text())
-      .then((data) => {
-        const parsedData = JSON.parse(data);
-        const event = {
-          createdBy: parsedData.created_by,
-          location: parsedData.location,
-          date: parsedData.date_time,
-          id: parsedData.id,
-          desc: parsedData.description
+    const fetchData = async () => {
+      const response = await fetch(PathConstants.BACKEND.EVENT, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${access_token}`
         }
-        setEventList(prevEvents => [...prevEvents, event]);
-      })
-  }, [access_token])
+      });
+      const data = await response.text();
+      const parsedData = JSON.parse(data);
+      const event = {
+        createdBy: parsedData.created_by,
+        location: parsedData.location,
+        date: parsedData.date_time,
+        id: parsedData.id,
+        desc: parsedData.description
+      }
+      setEventList(prevEvents => [...prevEvents, event]);
+    };
+  
+    fetchData();
+  }, [access_token]);
 
   useEffect(() => {
-    fetch(PathConstants.BACKEND.ME, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${access_token}`
-      }
-    })
-      .then(response => response.text())
-      .then((data) => {
-        const parsedData = JSON.parse(data);
-        const currentUser = {
-          id: parsedData.id,
-          fullName: parsedData.full_name,
-          userName: parsedData.user_name,
-          email: parsedData.email,
-          img: parsedData.profile_photo
+    const fetchData = async () => {
+      const response = await fetch(PathConstants.BACKEND.ME, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${access_token}`
         }
-        setMe(currentUser);
-        parsedData.friends.forEach(element => {
-          fetch(PathConstants.BACKEND.USER + element)
-            .then(response => {
-              if (response.status === 401) {
-                navigate(PathConstants.LOGIN);
-                throw new Error('Unauthorized');
-              }
-              if (!response.ok) {
-                throw new Error(`HTTP status ${response.status}`);
-              }
-              return response.text();
-            })
-            .then((data) => {
-              const parsedData = JSON.parse(data);
-              const friend = {
-                userName: parsedData.user_name,
-                fullName: parsedData.full_name,
-                email: parsedData.email,
-                img: parsedData.profile_photo
-              }
-              setFriendList(prevFriends => [...prevFriends, friend]);
-            })
-            .catch(error => {
-              console.error('Error fetching user data:', error);
-            });
-        });
-      })
-      .catch(error => {
-        console.error('Error fetching friends list:', error);
       });
+  
+      if (response.status === 401) {
+        navigate(PathConstants.LOGIN);
+        throw new Error('Unauthorized');
+      }
+  
+      if (!response.ok) {
+        throw new Error(`HTTP status ${response.status}`);
+      }
+  
+      const data = await response.text();
+      const parsedData = JSON.parse(data);
+      const currentUser = {
+        id: parsedData.id,
+        fullName: parsedData.full_name,
+        userName: parsedData.user_name,
+        email: parsedData.email,
+        img: parsedData.profile_photo
+      }
+      setMe(currentUser);
+  
+      for (const element of parsedData.friends) {
+        const friendResponse = await fetch(PathConstants.BACKEND.USER + element);
+  
+        if (friendResponse.status === 401) {
+          navigate(PathConstants.LOGIN);
+          throw new Error('Unauthorized');
+        }
+  
+        if (!friendResponse.ok) {
+          throw new Error(`HTTP status ${friendResponse.status}`);
+        }
+  
+        const friendData = await friendResponse.text();
+        const parsedFriendData = JSON.parse(friendData);
+        const friend = {
+          userName: parsedFriendData.user_name,
+          fullName: parsedFriendData.full_name,
+          email: parsedFriendData.email,
+          img: parsedFriendData.profile_photo
+        }
+        setFriendList(prevFriends => [...prevFriends, friend]);
+      }
+    };
+  
+    fetchData().catch(error => {
+      console.error('Error fetching user data:', error);
+    });
   }, [access_token, navigate]);
-
-  console.log(me);
 
   return (
     <PrivateLayout>
       <div className="flex justify-between gap-x-10 my-10 relative">
         <div className="w-1/3 flex flex-col items-center gap-y-3">
           <UserProfile
-            onClickMethod={() => navigate(PathConstants.USER + me.id)}
+            onClickMethod={() => navigate(PathConstants.USER + me.userName)}
             className="w-64 h-64 rounded-full"
             img={me.img}
             userName={me.userName}

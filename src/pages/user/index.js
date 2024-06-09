@@ -8,12 +8,14 @@ import FriendCard from "pages/home/components/FriendCard";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import PathConstants from "routes/PathConstant";
+import EventCard from "pages/home/components/EventCard";
 
 const User = () => {
   const navigate = useNavigate();
 
   const [me, setMe] = useState({});
   const [user, setUser] = useState({});
+  const [eventList, setEventList] = useState([]);
 
   const access_token = localStorage.getItem("access_token");
   useEffect(() => {
@@ -43,6 +45,7 @@ const User = () => {
         return response.text();
       })
       .then((data) => {
+        fetchEventList();
         const parsedData = JSON.parse(data);
         const currentUser = {
           friends: parsedData.friends,
@@ -171,8 +174,43 @@ const User = () => {
     console.log("w")
   };
 
-  let profileAddress =
-    "https://t3.ftcdn.net/jpg/02/43/12/34/360_F_243123463_zTooub557xEWABDLk0jJklDyLSGl2jrr.jpg";
+  const fetchEventList = async () => {
+    const response = await fetch(PathConstants.BACKEND.EVENT, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${access_token}`
+      }
+    });
+
+    if (response.status === 401) {
+      navigate(PathConstants.LOGIN);
+      return;
+    }
+
+    if (!response.ok) {
+      console.log(response);
+      throw new Error(`HTTP status ${response.status}`);
+    }
+
+    const parsedData = await response.json();
+
+    if (!parsedData) {
+      return;
+    }
+
+    const events = parsedData.map(data => ({
+      key: data.id,
+      createdBy: data.created_by,
+      location: data.location,
+      date: data.date_time,
+      id: data.id,
+      desc: data.description
+    }));
+
+    setEventList(events);
+  };
+
   const mainEventList = [
     {
       eventName: "Yaratıcı Yazma Atölyesi",
@@ -190,7 +228,7 @@ const User = () => {
     <PrivateLayout>
       <div className="flex  justify-center  items-center gap-x-20 my-10 ">
         <img
-          src={profileAddress}
+          src={me.img === '' ? "https://t3.ftcdn.net/jpg/02/43/12/34/360_F_243123463_zTooub557xEWABDLk0jJklDyLSGl2jrr.jpg" : me.img}
           alt="ProfilePhoto"
           className="w-44 h-44 rounded-full"
         />
@@ -227,18 +265,17 @@ const User = () => {
       <div className="flex flex-col  justify-center items-center mt-5 ">
         <h1 className="text-gray-500 text-xl my-4">Etkinlikler</h1>
         <div className="w-[800px] shadow p-4 rounded-md">
-          {mainEventList.map((allEvent) => (
-            <FriendCard
-              eventName={allEvent.eventName}
-              location={allEvent.location}
-              desc={allEvent.desc}
-              key={allEvent.id}
-              userMail={allEvent.userMail}
-              userName={allEvent.userName}
-              img={allEvent.img}
-              address={allEvent.address}
-            />
-          ))}
+        {eventList && eventList.length > 0 && eventList.filter(event => event.createdBy === me.userName).map((event) => (
+            <li key={event.id} style={{ listStyleType: 'none' }}>
+              <EventCard
+                onClickMethod={() => navigate(PathConstants.EVENT + event.id)}
+                description={event.desc}
+                createdBy={event.createdBy}
+                location={event.location}
+                date={event.date}
+              />
+            </li>
+          ))};
         </div>
       </div>
     </PrivateLayout>

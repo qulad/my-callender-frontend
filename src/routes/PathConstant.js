@@ -5,7 +5,10 @@ const PathConstants = {
   REGISTER: "/register",
   ABOUT: "/about",
   USER: "/user/",
+  ADD_EVENT: "/add-event",
+  EVENT: "/event/",
   BACKEND: {
+    FRIENDS: "http://localhost:5000/user/friends",
     BASE: "http://localhost:5000",
     LOGIN: "http://localhost:5000/auth/login",
     REGISTER: "http://localhost:5000/auth/register",

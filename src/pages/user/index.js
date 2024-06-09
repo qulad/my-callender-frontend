@@ -1,6 +1,5 @@
 import { AddUser } from "components/Icons/AddUser";
 import { BlockUser } from "components/Icons/BlockUser";
-import { Dots } from "components/Icons/Dots";
 import { RejectUser } from "components/Icons/RejectUser";
 import { AcceptUser } from "components/Icons/AcceptUser";
 import { Verify } from "components/Icons/Verify";
@@ -100,19 +99,19 @@ const User = () => {
       .catch(error => {
         console.error('Error fetching friends list:', error);
       });
-  }, [access_token, navigate]);
+  }, [location, access_token, navigate]);
 
   console.log(me);
   console.log(user);
 
   const canSeeFriendRequest = () => {
-    return (me.id != user.id &&
-      me.sentFriendRequests.includes(user.userName) &&
-      me.receivedFriendRequest.includes(user.userName));
+    return (me.id !== user.id &&
+      (me.sentFriendRequests.includes(user.userName) ||
+      me.receivedFriendRequest.includes(user.userName)));
   }
 
   const canSeeAddFriend = () => {
-    return (me.id != user.id &&
+    return (me.id !== user.id &&
       !me.friends.includes(user.userName) &&
       !me.blocked.includes(user.userName) &&
       !me.sentFriendRequests.includes(user.userName) &&
@@ -120,22 +119,52 @@ const User = () => {
   };
 
   const canSeeBlockFriend = () => {
-    return (me.id != user.id &&
+    return (me.id !== user.id &&
       !me.blocked.includes(user.userName) &&
       !me.sentFriendRequests.includes(user.userName) &&
       !me.receivedFriendRequest.includes(user.userName));
   }
 
   const acceptFriendRequest = () => {
-    console.log("e");
+    fetch(PathConstants.BACKEND.FRIENDS, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${access_token}`
+      },
+      body: JSON.stringify({ userName: user.userName })
+    })
+    .then((response) => {
+      navigate(location.pathname);
+    });
   };
 
   const rejectFriendRequest = () => {
-    console.log("r");
+    fetch(PathConstants.BACKEND.FRIENDS, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${access_token}`
+      },
+      body: JSON.stringify({ userName: user.userName })
+    })
+    .then((response) => {
+      navigate(location.pathname);
+    });
   };
 
   const sendFriendRequest = () => {
-    console.log("q");
+    fetch(PathConstants.BACKEND.FRIENDS, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${access_token}`
+      },
+      body: JSON.stringify({ userName: user.userName })
+    })
+    .then((response) => {
+      navigate(location.pathname);
+    });
   };
 
   const blockUserRequest = () => {

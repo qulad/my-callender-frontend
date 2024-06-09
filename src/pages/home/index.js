@@ -6,23 +6,25 @@ import HomeHeader from "./components/HomeHeader";
 import FriendCard from "./components/FriendCard";
 import { useNavigate } from "react-router-dom";
 import PathConstants from "routes/PathConstant";
+import AddEvent from "./components/AddEvent";
+import Popup from 'reactjs-popup';
+import 'reactjs-popup/dist/index.css';
 
 const Home = () => {
   const navigate = useNavigate();
-
   const access_token = localStorage.getItem("access_token");
-  useEffect(() => {
-    if (!access_token) {
-      navigate(PathConstants.LOGIN);
-    }
-  });
 
   const [eventList, setEventList] = useState([]);
   const [friendList, setFriendList] = useState([]);
   const [me, setMe] = useState({});
 
   useEffect(() => {
-    const fetchData = async () => {
+    if (access_token === null) {
+      navigate(PathConstants.LOGIN);
+      return;
+    }
+
+    const fetchEventList = async () => {
       const response = await fetch(PathConstants.BACKEND.EVENT, {
         method: 'GET',
         headers: {
@@ -30,33 +32,36 @@ const Home = () => {
           'Authorization': `Bearer ${access_token}`
         }
       });
-      
+
       if (response.status === 401) {
         navigate(PathConstants.LOGIN);
-        throw new Error('Unauthorized');
+        return;
       }
-  
+
       if (!response.ok) {
+        console.log(response);
         throw new Error(`HTTP status ${response.status}`);
       }
 
-      const data = await response.text();
-      const parsedData = JSON.parse(data);
-      const event = {
-        createdBy: parsedData.created_by,
-        location: parsedData.location,
-        date: parsedData.date_time,
-        id: parsedData.id,
-        desc: parsedData.description
-      }
-      setEventList(prevEvents => [...prevEvents, event]);
-    };
-  
-    fetchData();
-  }, [access_token]);
+      const parsedData = await response.json();
 
-  useEffect(() => {
-    const fetchData = async () => {
+      if (!parsedData) {
+        return;
+      }
+
+      const events = parsedData.map(data => ({
+        key: data.id,
+        createdBy: data.created_by,
+        location: data.location,
+        date: data.date_time,
+        id: data.id,
+        desc: data.description
+      }));
+
+      setEventList(events);
+    };
+
+    const fetchMeAndFriends = async () => {
       const response = await fetch(PathConstants.BACKEND.ME, {
         method: 'GET',
         headers: {
@@ -64,16 +69,16 @@ const Home = () => {
           'Authorization': `Bearer ${access_token}`
         }
       });
-  
+
       if (response.status === 401) {
         navigate(PathConstants.LOGIN);
-        throw new Error('Unauthorized');
+        return;
       }
-  
+
       if (!response.ok) {
         throw new Error(`HTTP status ${response.status}`);
       }
-  
+
       const data = await response.text();
       const parsedData = JSON.parse(data);
       const currentUser = {
@@ -82,21 +87,21 @@ const Home = () => {
         userName: parsedData.user_name,
         email: parsedData.email,
         img: parsedData.profile_photo
-      }
+      };
       setMe(currentUser);
-  
+
       for (const element of parsedData.friends) {
         const friendResponse = await fetch(PathConstants.BACKEND.USER + element);
-  
+
         if (friendResponse.status === 401) {
           navigate(PathConstants.LOGIN);
-          throw new Error('Unauthorized');
+          return;
         }
-  
+
         if (!friendResponse.ok) {
           throw new Error(`HTTP status ${friendResponse.status}`);
         }
-  
+
         const friendData = await friendResponse.text();
         const parsedFriendData = JSON.parse(friendData);
         const friend = {
@@ -104,15 +109,22 @@ const Home = () => {
           fullName: parsedFriendData.full_name,
           email: parsedFriendData.email,
           img: parsedFriendData.profile_photo
-        }
+        };
         setFriendList(prevFriends => [...prevFriends, friend]);
       }
     };
-  
-    fetchData().catch(error => {
-      console.error('Error fetching user data:', error);
-    });
-  }, [access_token, navigate]);
+
+    const fetchData = async () => {
+      try {
+        await fetchEventList();
+        await fetchMeAndFriends();
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, [navigate, access_token]);
 
   return (
     <PrivateLayout>
@@ -127,31 +139,48 @@ const Home = () => {
             email={me.email}
           />
           <hr className="w-full h-1"></hr>
-          {friendList.map((friend) => (
-            <FriendCard
-              key={friend.userName}
-              fullName={friend.fullName}
-              userMail={friend.email}
-              userName={friend.userName}
-              img={friend.img}
-            />
+          {friendList && friendList.length > 0 && friendList.map((friend) => (
+            <li key={friend.userName}>
+              <FriendCard
+                key={friend.userName}
+                fullName={friend.fullName}
+                userMail={friend.email}
+                userName={friend.userName}
+                img={friend.img}
+              />
+            </li>
           ))}
         </div>
         <div className="w-2/3 flex flex-col gap-y-3">
           <HomeHeader />
           <hr className="w-full h-1"></hr>
-          {eventList.map((event) => (
-            <EventCard
-              key={event.id}
-              createdBy={event.createdBy}
-              location={event.location}
-              date={event.date}
-            />
-          ))}
+          {eventList && eventList.length > 0 && eventList.map((event) => (
+            <li key={event.id} style={{ listStyleType: 'none' }}>
+              <EventCard
+                onClickMethod={() => navigate(PathConstants.EVENT + event.id)}
+                description={event.desc}
+                createdBy={event.createdBy}
+                location={event.location}
+                date={event.date}
+              />
+            </li>
+          ))};
           <div className=" bottom-5 right-5 fixed">
-            <button className="border border-gray-200 shadow p-2 rounded-md ">
-              Etkinlik oluştur
-            </button>
+            <Popup
+              trigger={<button className="border border-gray-200 shadow p-2 rounded-md "> Etkinlik oluştur </button>}
+              modal
+              nested
+              contentStyle={{ width: '80%', height: '45%', maxWidth: '800px', position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+            >
+              {close => (
+                <div className='modal'>
+                  <div className='content'>
+                    Yeni Etkinlik
+                  </div>
+                  <AddEvent />
+                </div>
+              )}
+            </Popup>
           </div>
         </div>
       </div>

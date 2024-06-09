@@ -1,8 +1,7 @@
 import React from "react";
 
 const UserProfile = ({ onClickMethod, img, className, fullName, userName, email }) => {
-  let profileAddress =
-    "https://t3.ftcdn.net/jpg/02/43/12/34/360_F_243123463_zTooub557xEWABDLk0jJklDyLSGl2jrr.jpg";
+  let profileAddress = img === '' ? "https://t3.ftcdn.net/jpg/02/43/12/34/360_F_243123463_zTooub557xEWABDLk0jJklDyLSGl2jrr.jpg" : img;
   return (
     <div className="flex flex-col items-center" onClick={onClickMethod}>
       <img src={profileAddress} alt="UserProfile" className={className} />

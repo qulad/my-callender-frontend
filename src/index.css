@@ -6,6 +6,17 @@ body.active-popup {
     overflow-y: hidden;
 }
 
+.content {
+    font-size: 2em;
+    /* Yazının boyutunu ayarlar */
+    font-family: Arial, sans-serif;
+    /* Yazının fontunu ayarlar */
+    text-align: center;
+    /* Yazıyı merkeze hizalar */
+    padding: 20px;
+    /* Yazıya padding ekler */
+}
+
 .btn-popup {
     padding: 10px 20px;
     display: block;
@@ -13,7 +24,8 @@ body.active-popup {
     font-size: 18px;
 }
 
-.popup, .overlay {
+.popup,
+.overlay {
     width: 100vw;
     height: 100vh;
     top: 0;
@@ -24,8 +36,9 @@ body.active-popup {
 }
 
 .overlay {
-    background: rgba(49,49,49,0.8);
+    background: rgba(49, 49, 49, 0.8);
 }
+
 .popup-content {
     position: absolute;
     top: 40%;

@@ -45,6 +45,8 @@ const AddEvent = () => {
                 throw new Error(`HTTP status ${response.status}`);
             }
 
+            window.location.reload();
+
             const data = await response.json();
             console.log(data);
         } catch (error) {

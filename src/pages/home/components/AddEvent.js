@@ -68,7 +68,7 @@ const AddEvent = () => {
                 Etkinlik Tarihi: 
                 <input type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} style={{ border: '1px solid #ccc', borderRadius: '4px', padding: '6px 12px', fontSize: '1em', fontFamily: 'Arial, sans-serif' }} />
             </label>
-            <input type="submit" value="Submit" style={{ backgroundColor: '#4CAF50', color: 'white', padding: '14px 20px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '1em', fontFamily: 'Arial, sans-serif' }} />
+            <input type="submit" value="Etkinlik Oluştur" style={{ backgroundColor: '#4CAF50', color: 'white', padding: '14px 20px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '1em', fontFamily: 'Arial, sans-serif' }} />
         </form>
     );
 };

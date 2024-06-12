@@ -4,7 +4,6 @@ import { RejectUser } from "components/Icons/RejectUser";
 import { AcceptUser } from "components/Icons/AcceptUser";
 import { Verify } from "components/Icons/Verify";
 import PrivateLayout from "layouts/PrivateLayout";
-import FriendCard from "pages/home/components/FriendCard";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import PathConstants from "routes/PathConstant";
@@ -199,6 +198,8 @@ const User = () => {
       return;
     }
 
+    console.log(parsedData);
+
     const events = parsedData.map(data => ({
       key: data.id,
       createdBy: data.created_by,
@@ -207,6 +208,8 @@ const User = () => {
       id: data.id,
       desc: data.description
     }));
+
+    console.log(events);
 
     setEventList(events);
   };
@@ -266,7 +269,7 @@ const User = () => {
         <h1 className="text-gray-500 text-xl my-4">Etkinlikler</h1>
         <div className="w-[800px] shadow p-4 rounded-md">
         {eventList && eventList.length > 0 && eventList.filter(event => event.createdBy === me.userName).map((event) => (
-            <li key={event.id} style={{ listStyleType: 'none' }}>
+            <li key={event.key} style={{ listStyleType: 'none' }}>
               <EventCard
                 onClickMethod={() => navigate(PathConstants.EVENT + event.id)}
                 description={event.desc}
